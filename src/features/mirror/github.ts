@@ -19,7 +19,8 @@ function getOctokit(): Octokit {
 }
 
 export async function ensureMirrorRepoExists(
-  originalName: string
+  originalName: string,
+  isPrivate = true
 ): Promise<string | null> {
   const username = getEnv("GITHUB_MIRROR_USERNAME")!;
 
@@ -58,14 +59,14 @@ export async function ensureMirrorRepoExists(
     if (username === tokenLogin) {
       await client.repos.createForAuthenticatedUser({
         name: repoName,
-        private: true,
+        private: isPrivate,
       });
     } else {
       // Target is an organization
       await client.repos.createInOrg({
         org: username,
         name: repoName,
-        private: true,
+        private: isPrivate,
       });
     }
     console.log("✅ Repo created");
