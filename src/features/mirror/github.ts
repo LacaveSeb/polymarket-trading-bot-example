@@ -50,12 +50,24 @@ export async function ensureMirrorRepoExists(
     }
   }
 
-  // Create if not found
+  // Create if not found — under GITHUB_MIRROR_USERNAME (user or org)
   try {
-    await client.repos.createForAuthenticatedUser({
-      name: repoName,
-      private: true,
-    });
+    const { data: me } = await client.users.getAuthenticated();
+    const tokenLogin = me.login;
+
+    if (username === tokenLogin) {
+      await client.repos.createForAuthenticatedUser({
+        name: repoName,
+        private: true,
+      });
+    } else {
+      // Target is an organization
+      await client.repos.createInOrg({
+        org: username,
+        name: repoName,
+        private: true,
+      });
+    }
     console.log("✅ Repo created");
     return repoName;
   } catch (err) {
