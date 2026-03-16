@@ -38,6 +38,7 @@ cp .env.example .env
 ### Release (`npm run release`)
 
 - Uses `GITHUB_RELEASE_TOKEN` (repo scope, admin on target repos)
+- Targets private repos owned by `GITHUB_RELEASE_USERNAME` (user or org)
 - Only repos with last update **after** `LAST_UPDATE_DATE` (ISO) are changed from private → public
 
 ## Env reference

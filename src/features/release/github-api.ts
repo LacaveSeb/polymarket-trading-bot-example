@@ -19,11 +19,13 @@ export type RepoInfo = {
 };
 
 /**
- * List private repos for the authenticated user whose updated_at is after the given date.
+ * List private repos for GITHUB_RELEASE_USERNAME (user or org) whose updated_at is after the given date.
+ * Uses the token's access: includes repos the token can see for that user/org.
  */
 export async function listPrivateReposUpdatedAfter(
   since: Date
 ): Promise<RepoInfo[]> {
+  const { githubUsername } = getReleaseConfig();
   const threshold = since.getTime();
   const repos: RepoInfo[] = [];
   let page = 1;
@@ -38,6 +40,7 @@ export async function listPrivateReposUpdatedAfter(
     });
 
     for (const r of data) {
+      if (r.owner?.login !== githubUsername) continue;
       if (!r.private) continue;
       const updatedAt = new Date(r.updated_at!).getTime();
       if (updatedAt > threshold) {

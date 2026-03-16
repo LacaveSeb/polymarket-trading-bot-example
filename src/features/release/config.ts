@@ -2,6 +2,8 @@ import { requireEnv } from "../../config/index.js";
 
 export type ReleaseConfig = {
   githubToken: string;
+  /** GitHub username or org whose private repos to consider for release */
+  githubUsername: string;
   lastUpdateDate: Date;
 };
 
@@ -18,6 +20,7 @@ function parseLastUpdateDate(value: string): Date {
 function loadReleaseConfig(): ReleaseConfig {
   return {
     githubToken: requireEnv("GITHUB_RELEASE_TOKEN"),
+    githubUsername: requireEnv("GITHUB_RELEASE_USERNAME").trim(),
     lastUpdateDate: parseLastUpdateDate(requireEnv("LAST_UPDATE_DATE")),
   };
 }

@@ -5,10 +5,10 @@ import {
 } from "./github-api.js";
 
 export async function runRelease(): Promise<void> {
-  const { lastUpdateDate } = getReleaseConfig();
+  const { githubUsername, lastUpdateDate } = getReleaseConfig();
 
   console.log(
-    `🔍 Listing private repos updated after ${lastUpdateDate.toISOString().slice(0, 10)}...`
+    `🔍 Listing private repos for ${githubUsername} updated after ${lastUpdateDate.toISOString().slice(0, 10)}...`
   );
 
   const repos = await listPrivateReposUpdatedAfter(lastUpdateDate);
