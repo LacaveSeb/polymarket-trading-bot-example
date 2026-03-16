@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { execSync } from "node:child_process";
+import { ensureMirrorRepoExists } from "./github.js";
 
 function getEnv(name: string, required = true): string | undefined {
   const value = process.env[name];
@@ -42,18 +43,24 @@ export async function runMirror(): Promise<void> {
     const repoDir = path.join(resolvedBase, entry.name);
     if (!isGitRepo(repoDir)) continue;
 
-    const repoName = entry.name;
-    const remoteUrl = `https://${token}@github.com/${username}/${repoName}.git`;
+    console.log(`\n=== Processing ${entry.name} ===`);
 
-    console.log(`\n=== Processing ${repoName} ===`);
+    // Ensure the remote repo exists (create if needed)
+    const remoteRepoName = await ensureMirrorRepoExists(entry.name);
+    if (!remoteRepoName) {
+      console.error(`Skipping ${entry.name} because remote repo could not be ensured.`);
+      continue;
+    }
+
+    const remoteUrl = `https://${token}@github.com/${username}/${remoteRepoName}.git`;
+
     console.log(`Setting origin to: ${remoteUrl}`);
 
     try {
       runGit(`git remote set-url origin "${remoteUrl}"`, repoDir);
       runGit("git push --force origin HEAD", repoDir);
     } catch (error) {
-      console.error(`Failed mirroring ${repoName}:`, error);
+      console.error(`Failed mirroring ${entry.name}:`, error);
     }
   }
 }
-
