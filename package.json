@@ -8,7 +8,8 @@
     "clone": "tsx src/scripts/clone-all-repos.ts",
     "replace": "tsx src/scripts/replace-repos.ts",
     "release": "tsx src/scripts/release-repos.ts",
-    "mirror": "tsx src/scripts/mirror-repos.ts"
+    "mirror": "tsx src/scripts/mirror-repos.ts",
+    "badge": "tsx src/scripts/badge-repos.ts"
   },
   "keywords": ["github", "clone", "git", "rewrite"],
   "license": "MIT",
