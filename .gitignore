@@ -1,0 +1,99 @@
+# =============================================================================
+# CRITICAL — NEVER COMMIT THESE — FINANCIAL LOSS IF EXPOSED
+# =============================================================================
+
+# Environment files (contain private keys, API keys, passwords)
+.env
+.env.*
+!.env.example
+.env.local
+.env.production
+.env.development
+*.env
+
+# Any file with "secret", "private", "key", "credential" in the name
+*secret*
+*private*
+*credential*
+*password*
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Polymarket specific
+polymarket_keys.json
+wallet.json
+pk.txt
+private_key.txt
+
+# =============================================================================
+# NODE / TYPESCRIPT
+# =============================================================================
+
+dist/
+
+# =============================================================================
+# BOT SPECIFIC
+# =============================================================================
+
+# Trade data (personal financial records)
+paper_trades.json
+trades.json
+trade_history.json
+*.trade
+
+# Logs (can contain sensitive info)
+logs/
+*.log
+
+# Bot state files
+bot_state.json
+last_trade.json
+
+# Performance data
+performance/
+*.perf
+
+# =============================================================================
+# REDIS
+# =============================================================================
+dump.rdb
+*.rdb
+
+# =============================================================================
+# IDE & SYSTEM
+# =============================================================================
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# PyCharm
+.idea/
+*.iml
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+
+# =============================================================================
+# MISC
+# =============================================================================
+*.bak
+*.tmp
+*.temp
+*.swp
+*.swo
+node_modules/
+.cache/
