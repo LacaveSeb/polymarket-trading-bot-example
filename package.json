@@ -6,6 +6,7 @@
   "scripts": {
     "build": "tsc",
     "clone": "tsx src/scripts/clone-all-repos.ts",
+    "new": "tsx src/scripts/new-repo.ts",
     "replace": "tsx src/scripts/replace-repos.ts",
     "release": "tsx src/scripts/release-repos.ts",
     "mirror": "tsx src/scripts/mirror-repos.ts",
