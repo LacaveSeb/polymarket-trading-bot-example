@@ -109,8 +109,3 @@ Trading involves significant risk. This software is for educational purposes. Pa
 
 - [Polymarket](https://polymarket.com) — CLOB and markets  
 - [clob-client](https://github.com/Polymarket/clob-client) — TypeScript SDK  
-
-
-
-
-

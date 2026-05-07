@@ -1,6 +1,5 @@
 import { SignalDirection, type FusedSignal, type TradingSignal } from "../../../domain/signals.js";
 import { logger } from "../../../config/logger.js";
-import { Big } from "../../../math/big.js";
 
 function directionStr(d: SignalDirection | string): string {
   return String(d).toUpperCase();
@@ -34,31 +33,31 @@ export class SignalFusionEngine {
     const recent = signals.filter((s) => now.getTime() - s.timestamp.getTime() < 5 * 60 * 1000);
     if (recent.length < minSignals) return null;
 
-    let bullishContrib = new Big(0);
-    let bearishContrib = new Big(0);
+    let bullishContrib = 0;
+    let bearishContrib = 0;
 
     for (const signal of recent) {
-      const weight = new Big(this.weights[signal.source] ?? this.weights.default!);
-      const strengthFactor = new Big(signal.strength).div(4);
-      const conf = new Big(Math.min(1, Math.max(0, signal.confidence)));
-      const contribution = weight.times(conf).times(strengthFactor);
+      const weight = this.weights[signal.source] ?? this.weights.default!;
+      const strengthFactor = signal.strength / 4;
+      const conf = Math.min(1, Math.max(0, signal.confidence));
+      const contribution = weight * conf * strengthFactor;
       const ds = directionStr(signal.direction);
-      if (ds.includes("BULLISH")) bullishContrib = bullishContrib.plus(contribution);
-      else if (ds.includes("BEARISH")) bearishContrib = bearishContrib.plus(contribution);
+      if (ds.includes("BULLISH")) bullishContrib += contribution;
+      else if (ds.includes("BEARISH")) bearishContrib += contribution;
     }
 
-    const totalContrib = bullishContrib.plus(bearishContrib);
-    if (totalContrib.lt(0.0001)) return null;
+    const totalContrib = bullishContrib + bearishContrib;
+    if (totalContrib < 0.0001) return null;
 
     const direction =
-      bullishContrib.gte(bearishContrib) ? SignalDirection.BULLISH : SignalDirection.BEARISH;
-    const dominant = bullishContrib.gte(bearishContrib) ? bullishContrib : bearishContrib;
-    const consensusScore = totalContrib.gt(0)
-      ? Number(dominant.div(totalContrib).times(100))
+      bullishContrib >= bearishContrib ? SignalDirection.BULLISH : SignalDirection.BEARISH;
+    const dominant = bullishContrib >= bearishContrib ? bullishContrib : bearishContrib;
+    const consensusScore = totalContrib > 0
+      ? (dominant / totalContrib) * 100
       : 0;
-    let confSum = new Big(0);
-    for (const s of recent) confSum = confSum.plus(s.confidence);
-    const avgConf = Number(confSum.div(recent.length || 1));
+    let confSum = 0;
+    for (const s of recent) confSum += s.confidence;
+    const avgConf = confSum / (recent.length || 1);
 
     if (consensusScore < minScore) return null;
 
@@ -70,9 +69,9 @@ export class SignalFusionEngine {
       signals: recent,
       weights: { ...this.weights },
       metadata: {
-        bullish_contrib: Number(bullishContrib.round(4)),
-        bearish_contrib: Number(bearishContrib.round(4)),
-        total_contrib: Number(totalContrib.round(4)),
+        bullish_contrib: Number(bullishContrib.toFixed(4)),
+        bearish_contrib: Number(bearishContrib.toFixed(4)),
+        total_contrib: Number(totalContrib.toFixed(4)),
       },
       numSignals: recent.length,
     };

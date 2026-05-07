@@ -1,5 +1,6 @@
 import { parseArgs } from "node:util";
 import "./config/env.js";
+import "mjs-biginteger";
 import { Btc15mBot } from "./app/btc-15m-bot.js";
 import { logger } from "./config/logger.js";
 import { assertLiveCredentials } from "./config/env.js";

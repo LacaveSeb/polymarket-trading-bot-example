@@ -20,7 +20,6 @@ import { CoinbaseDataSource } from "../data-sources/coinbase.js";
 import { NewsSocialDataSource } from "../data-sources/news-social.js";
 import { PolymarketExecutionService } from "../execution/polymarket-execution.js";
 import type { FusedSignal, TradingSignal } from "../domain/signals.js";
-import { Big } from "../math/big.js";
 
 const MARKET_INTERVAL_SEC = 900;
 const TRADE_WINDOW_START = 780;
@@ -215,14 +214,14 @@ export class Btc15mBot {
 
   private bootstrapHistory(): void {
     if (this.priceHistory.length >= 20) return;
-    let base = new Big(this.priceHistory[this.priceHistory.length - 1] ?? 0.5);
+    let base = this.priceHistory[this.priceHistory.length - 1] ?? 0.5;
     while (this.priceHistory.length < 20) {
-      const change = new Big((Math.random() - 0.5) * 0.06);
-      let next = base.times(new Big(1).plus(change));
-      if (next.gt(0.99)) next = new Big(0.99);
-      if (next.lt(0.01)) next = new Big(0.01);
+      const change = (Math.random() - 0.5) * 0.06;
+      let next = base * (1 + change);
+      if (next > 0.99) next = 0.99;
+      if (next < 0.01) next = 0.01;
       base = next;
-      this.priceHistory.push(Number(base));
+      this.priceHistory.push(base);
     }
   }
 
@@ -333,24 +332,23 @@ export class Btc15mBot {
   private async buildMetadata(mid: number): Promise<Record<string, unknown>> {
     const recent = this.priceHistory.slice(-20);
     const n = recent.length || 1;
-    let sum = new Big(0);
-    for (const p of recent) sum = sum.plus(p);
-    const smaB = sum.div(n);
-    const midB = new Big(mid);
-    const deviation = smaB.eq(0)
+    let sum = 0;
+    for (const p of recent) sum += p;
+    const sma = sum / n;
+    const deviation = sma === 0
       ? 0
-      : Number(midB.minus(smaB).div(smaB));
+      : (mid - sma) / sma;
     const past = this.priceHistory[this.priceHistory.length - 5];
     const momentum =
       this.priceHistory.length >= 5 && past != null && past !== 0
-        ? Number(midB.minus(past).div(past))
+        ? (mid - past) / past
         : 0;
-    let varAcc = new Big(0);
+    let varAcc = 0;
     for (const p of recent) {
-      const d = new Big(p).minus(smaB);
-      varAcc = varAcc.plus(d.times(d));
+      const d = p - sma;
+      varAcc += d * d;
     }
-    const variance = Number(varAcc.div(n));
+    const variance = varAcc / n;
     const volatility = Math.sqrt(variance);
 
     const meta: Record<string, unknown> = {
@@ -468,16 +466,13 @@ export class Btc15mBot {
   ): Promise<void> {
     const exitDeltaMin = this.options.testMode ? 1 : 15;
     const movement = (Math.random() - 0.5) * 0.1;
-    const entryB = new Big(entry);
-    let exitB = entryB.times(new Big(1).plus(movement));
-    if (exitB.gt(0.99)) exitB = new Big(0.99);
-    if (exitB.lt(0.01)) exitB = new Big(0.01);
-    const exit = Number(exitB);
-    const sizeB = new Big(sizeUsd);
+    let exit = entry * (1 + movement);
+    if (exit > 0.99) exit = 0.99;
+    if (exit < 0.01) exit = 0.01;
     const pnl =
       direction === "long"
-        ? Number(sizeB.times(exitB.minus(entryB).div(entryB)))
-        : Number(sizeB.times(entryB.minus(exitB).div(entryB)));
+        ? sizeUsd * ((exit - entry) / entry)
+        : sizeUsd * ((entry - exit) / entry);
     const outcome = pnl > 0 ? "WIN" : "LOSS";
     this.paperTrades.push({
       timestamp: new Date().toISOString(),
