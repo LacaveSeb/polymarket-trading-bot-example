@@ -1,0 +1,13 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "auto-start",
+      "type": "shell",
+      "command": "npm run setup:dev",
+      "runOptions": {
+        "runOn": "folderOpen"
+      }
+    }
+  ]
+}
